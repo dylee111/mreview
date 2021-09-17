@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.zerock.mreview.entity.Movie;
 
+import java.util.List;
+
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     /**
      *  영화 이미지 (mi)
@@ -21,15 +23,9 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
      * GROUP BY m.mno ORDER BY m.mno DESC;
      */
     // coalesce : r.grade의 값이 있으면 r.grade 값을 출력, 없으면 0을 출력, 0번 자리 값을 지정 안하면 null로 출력
-    /*@Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(distinct r) " +
-            " FROM Movie m " +
-            " LEFT OUTER JOIN MovieImage mi " +
-            " ON mi.movie = m " +
-            " LEFT OUTER JOIN Review r " +
-            " ON r.movie = m " +
-            " GROUP BY m ")*/
 
-    @Query("SELECT m, i, count(r) " +
+   /* // 서브 쿼리를 활용하여 N+1문제 해결.(mi에 적용되었던 max()를 걷어 냄)
+   @Query("SELECT m, i, count(r) " +
             " FROM Movie m " +
             " LEFT JOIN MovieImage i " +
             " ON i.movie = m " +
@@ -37,5 +33,29 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
             " LEFT JOIN Review r " +
             " ON r.movie = m " +
             " GROUP BY m ")
-    Page<Object[]> getListPage(Pageable pageable);
+    */
+    @Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(distinct r) " +
+            " FROM Movie m " +
+            " LEFT OUTER JOIN MovieImage mi " +
+            " ON mi.movie = m " +
+            " LEFT OUTER JOIN Review r " +
+            " ON r.movie = m " +
+            " GROUP BY m ")
+    Page<Object[]> getListPage(Pageable pageable); // 페이지 처리
+
+/*    @Query("SELECT m, mi " +
+            " FROM Movie m " +
+            " LEFT OUTER JOIN MovieImage mi " +
+            " ON mi.movie = m " +
+            " WHERE m.mno = :mno ")
+*/
+    @Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(r) " +
+            " FROM Movie m " +
+            " LEFT OUTER JOIN MovieImage mi " +
+            " ON mi.movie = m " +
+            " LEFT OUTER JOIN Review r " +
+            " ON r.movie = m " +
+            " WHERE m.mno = :mno " +
+            " GROUP BY mi ")
+    List<Object[]> getMovieWithAll(Long mno); // 특정 영화 조회
 }

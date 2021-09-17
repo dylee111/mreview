@@ -13,6 +13,7 @@ import org.zerock.mreview.entity.Movie;
 import org.zerock.mreview.entity.MovieImage;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.function.IntConsumer;
 import java.util.stream.IntStream;
@@ -51,7 +52,7 @@ class MovieRepositoryTests {
 //            } // accept()
 //        }); // IntCosumer()
 //    } // inserMovies()
-
+//
     @Test
     public void testListPage() {
         // PageRequest는 Pageable을 구현한 구현체이기 때문에 Pageable을 대신해서 사용이 가능하다.
@@ -64,4 +65,15 @@ class MovieRepositoryTests {
             System.out.println(Arrays.toString(objects));
         }
     } // testListPage()
+
+    @Test
+    public void testGetMovieWithAll() {
+        List<Object[]> result = movieRepository.getMovieWithAll(70L);
+
+        System.out.println(result);
+
+        for(Object[] arr : result) {
+            System.out.println(Arrays.toString(arr));
+        }
+    } // testGetMovieWithAll()
 }
