@@ -52,10 +52,10 @@ public class UploadController {
             //저장할 파일 이름 중간 "_"를 이용하여 구분
             String saveName = uploadPath + File.separator + folderPath + File.separator + uuid + "_" + fileName;
 
-            Path savePath = Paths.get(saveName);
+            Path savePath = Paths.get(saveName); // 파일을 저장할 위치 지정
 
             try {
-                uploadFile.transferTo(savePath);
+                uploadFile.transferTo(savePath); // transferTo() : 업로드할 파일 데이터를 지정한 경로 파일에 저장.
                 resultDTOList.add(new UploadResultDTO(fileName, uuid, folderPath));
             } catch (IOException e) {
                 e.printStackTrace();
@@ -73,7 +73,7 @@ public class UploadController {
         File uploadPathFolder = new File(uploadPath, folderPath);
 
         if(uploadPathFolder.exists() == false) { // uploadPathFolder가 존재 X -> 새로운 Folder 생성
-            uploadPathFolder.mkdirs();
+            uploadPathFolder.mkdirs(); // 폴더생성 함수 (디렉토리를 만드는데 사용)
         }
         return folderPath;
     } // makeFolder()
