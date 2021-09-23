@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<!-- ~ : 내가 속한 리소스 , @ : template에 포한된 경우 -->
+<th:block th:replace="~{/layout/basic :: setContent( ~{this::content} )}">
+    <th:block th:fragment="content">
+        <h1 class="mt-4">Movie Register Page</h1>
+
+        <form th:action="@{/movie/register}" th:method="post">
+            <!-- Title -->
+            <div class="form-group">
+                <label>Title</label>
+                                                        <!-- ★name : GuestbookDTO의 변수 이름과 동일해야 함.-->
+                <input type="text" class="form-control" name="title" placeholder="Enter Title">
+            </div>
+            <div style="margin-bottom:20px"></div>
+            <!-- Content -->
+            <div class="form-group">
+                <label>Content</label>
+                <!-- ★name : GuestbookDTO의 변수 이름과 동일해야 함.-->
+                <textarea class="form-control" name="content" rows="5"></textarea>
+            </div>
+            <div style="margin-bottom:20px"></div>
+
+            <!-- 이미지 -->
+            <div class="form-group fileForm">
+                <label>Image File</label>
+                <div class="custom-file">
+                    <input class="custom-file-input" type="file" id="fileInput" multiple>
+                    <label class="custom-file-label" data-browse="Browse"></label>
+                </div>
+            </div>
+
+            <div class="box">
+            </div>
+
+            <!--&lt;!&ndash; Writer &ndash;&gt;
+            <div class="form-group">
+                <label>Writer Email</label>
+                &lt;!&ndash; ★name : GuestbookDTO의 변수 이름과 동일해야 함.&ndash;&gt;
+                <input type="text" class="form-control" name="writerEmail" placeholder="Enter Writer Email">
+            </div>-->
+            <div style="margin-bottom:20px"></div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <script>
+            $(document).ready(function(e) {
+
+            }); // document.ready rnf
+        </script>
+    </th:block>
+</th:block>
+</html>

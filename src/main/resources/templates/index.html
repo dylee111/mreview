@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>index</title>
-</head>
-<body>
-    <h1>WELCOME</h1>
-    <a th:href="@{/uploadEx}">/uploadEx</a>
-</body>
-</html>
+<th:block th:replace="~{/layout/basic :: setContent(~{this::content})}">
+    <th:block th:fragment="content">
+        <h1>Movie Index</h1>
+        <a href="/movie/register">/movie/register</a><br>
+        <a href="/uploadEx">/uploadEx</a>
+    </th:block>
+</th:block>
