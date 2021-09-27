@@ -44,7 +44,7 @@ public class UploadController {
         return new ResponseEntity<>(HttpStatus.FORBIDDEN);
       }
       String originalName = uploadFile.getOriginalFilename();
-      String fileName = originalName.substring(originalName.lastIndexOf("\\")+1);
+      String fileName = originalName.substring(originalName.lastIndexOf("\\") + 1);
       log.info(fileName);
 
       String folderPath = makeFolder();

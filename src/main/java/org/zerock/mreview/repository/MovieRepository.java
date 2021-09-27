@@ -19,26 +19,29 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
   * */
 
 //  n+1문제를 해결하려면 mi에 적용되었던 max(mi)를 걷어내고 mi만 쓰는 것이다.
-//  @Query("select m, mi, avg(coalesce(r.grade,0)), count(distinct r) " +
-//          "from Movie m left outer join MovieImage mi on mi.movie = m " +
-//          "left outer join Review r on r.movie = m group by m ")
+/*  @Query("select m, mi, avg(coalesce(r.grade,0)), count(distinct r) " +
+          "from Movie m left outer join MovieImage mi on mi.movie = m " +
+          "left outer join Review r on r.movie = m group by m ")*/
 
   // 조금의 성능을 포기하고 서브쿼리를 사용하게 되면 max를 적용할 수 있다.
-//  @Query("select m, i, count(r) from Movie m left join MovieImage i " +
-//          "on m=i.movie and i.inum=(select max(i2.inum) from MovieImage i2 " +
-//          "where i2.movie = m ) " +
-//          "left outer join Review r on r.movie = m group by m")
-//  Page<Object[]> getListPage(Pageable pageable);
-  @Query("select m, mi, avg(coalesce(r.grade,0)), count(r) " +
-          " from Movie m left outer join MovieImage mi on mi.movie = m " +
-          " left outer join Review r on r.movie = m group by m ")
+/*  @Query("select m, i, count(r) from Movie m left join MovieImage i " +
+          "on m=i.movie and i.inum=(select max(i2.inum) from MovieImage i2 " +
+          "where i2.movie = m ) " +
+          "left outer join Review r on r.movie = m group by m")
+  Page<Object[]> getListPage(Pageable pageable);*/
+  @Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(r) " +
+          " FROM Movie m " +
+          " LEFT OUTER JOIN MovieImage mi ON mi.movie = m " +
+          " LEFT OUTER JOIN Review r ON r.movie = m " +
+          " GROUP BY m ")
   Page<Object[]> getListPage(Pageable pageable);
 
   /*@Query("select m, mi from Movie m left outer join MovieImage mi " +
           "on mi.movie = m where m.mno =:mno ")*/
-  @Query("select m, mi,avg(coalesce(r.grade,0)),count(r) " +
-          "from Movie m left outer join MovieImage mi on mi.movie = m " +
-          "left outer join Review r on r.movie = m "+
-          "where m.mno =:mno group by mi")
+  @Query("SELECT m, mi,avg(coalesce(r.grade,0)),count(r) " +
+          " FROM Movie m LEFT OUTER JOIN MovieImage mi ON mi.movie = m " +
+          " LEFT OUTER JOIN Review r ON r.movie = m "+
+          " WHERE m.mno =:mno " +
+          " GROUP BY mi ")
   List<Object[]> getMovieWithAll(Long mno);
 }

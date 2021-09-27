@@ -24,7 +24,7 @@
             </thead>
             <tbody>
                 <tr th:each="dto : ${result.dtoList}">
-                    <th scope="row">[[${dto.mno}]]</th>
+                    <th scope="row"><a th:href="@{/movie/read(mno=${dto.mno}, page=${result.page})}">[[${dto.mno}]]</a></th>
                     <td><img th:if="${dto.imageDTOList.size() > 0 && dto.imageDTOList[0].path != null}"
                              th:src="|/display?fileName=${dto.imageDTOList[0].getThumbnailURL()}|">[[${dto.title}]]</td>
                     <td><b>[[${dto.reviewCnt}]]</b></td>
@@ -83,8 +83,8 @@
             }
             function read(bno, page, type, keyword){
                 /*[+
-                var urlword = [[@{/board/read}]] +
-                    "?bno="+bno+"&page="+page+"&type="+type+"&keyword="+keyword;
+                var urlword = [[@{/movie/read}]] +
+                    "?mno="+mno+"&page="+page+"&type="+type+"&keyword="+keyword;
                 +]*/
                 location.href=urlword;
             }
