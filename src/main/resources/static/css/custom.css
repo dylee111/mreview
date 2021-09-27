@@ -1,15 +1,11 @@
-.tr-list {
-    cursor: pointer;
-}
+@charset "UTF-8";
+/*!
+LifeisGoodandHappy
+ */
 
-.tr-list:hover {
-    background-color: #c7e4ff;
-}
-
-a {
-    text-decoration: none;
-}
-
+.tr-list{cursor: pointer;}
+.tr-list:hover{background: #c7e4ff;}
+a {text-decoration: none;}
 select {
     width: 200px; /* 원하는 너비설정 */
     padding: .4em .2em; /* 여백으로 높이 설정 */
@@ -21,10 +17,5 @@ select {
     appearance: none;
 }
 
-.card-body {
-    border: 1px solid black;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: 6px 6px grey;
-}
+
+/* 댓글 스타일 지정 */

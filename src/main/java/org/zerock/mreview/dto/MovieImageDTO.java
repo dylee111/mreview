@@ -10,31 +10,30 @@ import java.net.URLEncoder;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class MovieImageDTO {
-    private String uuid;
-    private String imgName;
-    private String path;
+  private String uuid;
+  private String imgName;
+  private String path;
 
-    public String getImageURL() {
+  public String getImageURL(){
+    try {
+      return URLEncoder.encode(path + "/" + uuid
+              +"_"+imgName, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
+  public String getThumbnailURL(){
+    try {
+      return URLEncoder.encode(path + "/s_" + uuid
+              +"_"+imgName, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    return "";
+  }
 
-        try {
-            return URLEncoder.encode(path + "/" + uuid + "_" + imgName, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } // try ~ catch end.
-        return "";
-    } // getImageURL()
-
-    // Getter
-    public String getThumbnailURL() {
-
-        try {
-            return URLEncoder.encode(path + "/s_" + uuid + "_" + imgName, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        } // try ~ catch end.
-        return "";
-    } // getThumbnailURL()
 }

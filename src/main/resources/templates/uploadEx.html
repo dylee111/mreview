@@ -5,75 +5,58 @@
     <title>uploadEx</title>
 </head>
 <body>
-    <input name="uploadFiles" type="file" multiple>
-    <button class="uploadBtn">Upload</button>
+<input name="uploadFiles" type="file" multiple>
+<button class="uploadBtn">Upload</button>
+<div class="uploadResult">
 
-    <div class="uploadResult">
-
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-</body>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script>
-        $('.uploadBtn').click(function() {
-        // FormData : 이미지를 ajax로 Form 전송을 가능하게 해주는 객체
-            var formData = new FormData();
-
-            var inputFile = $("input[type='file']");
-
-            var files = inputFile[0].files; // 선택한 파일 목록
-
-            for(var i = 0; i < files.length; i++) {
-                console.log(files[i]);
-                formData.append("uploadFiles", files[i]);
-            } // uploadBtn click event end.
-
-            // 실제 업로드 부분
-            $.ajax({
-                url: '/uploadAjax',
-                processData: false,
-                contentType: false,
-                data: formData,
-                type: 'POST',
-                dataType: 'json',
-
-                success: function(result) {
-                    console.log(result);
-                    showUpLoadedImages(result);
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log(textStatus);
-                }
-            }); // $.ajax end
-
-            $(".uploadResult").on("click", ".removeBtn", function(e) {
-                var target = $(this);
-                var fileName = target.data("name");
-                var targetDiv = $(this).closest("div"); // target에 가장 가까운 <div> 태그를 지정
-
-                console.log(fileName);
-
-                $.post('/removeFile', {fileName: fileName}, function(result) {
-                    console.log(result);
-                    if(result === true) {targetDiv.remove();}
-                });
-            }); // removeBtn click event end.
-
-        }); // script end.
-
-            function showUpLoadedImages(arr) {
-                console.log(arr);
-
-                var divArea = $(".uploadResult");
-                var str = "";
-
-                for(var i = 0; i < arr.length; i++) {
-                    str += "<div>";
-                    str += "<img src='/display?fileName="+arr[i].thumbnailURL+"'><br>";
-                    str += "<button class='removeBtn' data-name='"+arr[i].imageURL+"'>❌</button>";
-                    str += "</div>";
-                }
-                divArea.append(str);
-            } // showUploadedImages()
-    </script>
+    $('.uploadBtn').click(function(){
+        var formData = new FormData();
+        var inputFile = $('input[type="file"]');
+        var files = inputFile[0].files;//선택한 파일 목록
+        for(var i=0;i<files.length;i++){
+            console.log(files[i]);
+            formData.append("uploadFiles", files[i]);
+        }
+        $.ajax({
+            url: '/uploadAjax',
+            processData: false,
+            contentType: false,
+            data: formData,
+            type: 'POST',
+            dataType: 'json',
+            success: function(result){
+                showUploadedImage(result);
+            },
+            error: function(jqXHR, textStatus, errorThrown){
+                console.log(textStatus);
+            }
+        });
+        $('.uploadResult').on('click','.removeBtn',function(e){
+            var target = $(this);
+            var fileName = target.data("name");
+            var targetDiv = $(this).closest("div");
+            console.log(fileName);
+            $.post('/removeFile', {fileName: fileName}, function(result){
+                console.log(result);
+                if(result===true) targetDiv.remove();
+            });
+        });
+    });
+    function showUploadedImage(arr){
+        console.log(arr);
+        var divArea = $(".uploadResult");
+        var str = "";
+        for(var i=0;i<arr.length;i++){
+            str += "<div>";
+            str += "<img src='/display?fileName="+arr[i].thumbnailURL+"'>";
+            str += "<button class='removeBtn' data-name='"+arr[i].imageURL+"'>X</button>";
+            str += "</div>";
+        }
+        divArea.append(str);
+    }
+</script>
+</body>
 </html>
