@@ -22,7 +22,7 @@ class MemberRepositoryTests {
   MemberRepository memberRepository;
 
   @Autowired
-  ReviewRespository reviewRespository;
+  ReviewRepository reviewRepository;
 
   @Test
   public void insertMembers() {
@@ -46,7 +46,7 @@ class MemberRepositoryTests {
 //    reviewRespository.deleteByMember(member);
 
     //순서 주의
-    reviewRespository.deleteByMember(member);
+    reviewRepository.deleteByMember(member);
     memberRepository.deleteById(mid);
   }
 }
