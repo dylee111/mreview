@@ -29,7 +29,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
           "where i2.movie = m ) " +
           "left outer join Review r on r.movie = m group by m")
   Page<Object[]> getListPage(Pageable pageable);*/
-  @Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(r) " +
+  @Query("SELECT m, mi, avg(coalesce(r.grade,0)), count(distinct r) " +
           " FROM Movie m " +
           " LEFT OUTER JOIN MovieImage mi ON mi.movie = m " +
           " LEFT OUTER JOIN Review r ON r.movie = m " +
@@ -38,7 +38,7 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
   /*@Query("select m, mi from Movie m left outer join MovieImage mi " +
           "on mi.movie = m where m.mno =:mno ")*/
-  @Query("SELECT m, mi,avg(coalesce(r.grade,0)),count(r) " +
+  @Query("SELECT m, mi,avg(coalesce(r.grade,0)),count(distinct r) " +
           " FROM Movie m LEFT OUTER JOIN MovieImage mi ON mi.movie = m " +
           " LEFT OUTER JOIN Review r ON r.movie = m "+
           " WHERE m.mno =:mno " +

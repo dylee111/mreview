@@ -42,9 +42,9 @@
         </style>
         <div class="uploadResult">
             <ul>
-                <li th:each="movieImage: ${dto.imageDTOList}">
+                <li th:each="movieImage: ${dto.imageDTOList}" th:data-file="${movieImage.getThumbnailURL()}">
                     <img th:if="${movieImage.path != null}"
-                         th:src="|/display?fileName=${movieImage.getThumbnailURL()}|">
+                         th:src="|/display?fileName=${movieImage.getThumbnailURL()}|" style="cursor:pointer">
                 </li>
             </ul>
         </div>
@@ -79,7 +79,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Movie Review</h5>
-                        <button type="button" class="btn btn-close replyClose" data-dismiss="modal" aria-label="Close"/>
+                        <button type="button" class="btn btn-close replyClose close" data-dismiss="modal" aria-label="Close"/>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
@@ -96,7 +96,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary close" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary reviewSaveBtn">Save changes</button>
                         <button type="button" class="btn btn-warning modifyBtn">Modify</button>
                         <button type="button" class="btn btn-danger removeBtn">Remove</button>
@@ -111,8 +111,8 @@
                     <div class="modal-header">
                         <h5 class="modal-title">Picture</h5>
 
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
+                        <button type="button" class="btn btn-close replyClose close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true"></span>
                         </button>
                     </div>
                     <div class="modal-body">
@@ -134,6 +134,13 @@
                 var grade = 0;
                 var mno = [[${dto.mno}]];
 
+                <!-- 모달 닫기 -->
+                $(".close").click(function() {
+                    inputMid.val("");
+                    inputText.val("");
+                    $('.modal').modal('hide');
+                });
+
                 $('.starrr').starrr({
                     rating: grade,
                     change: function(e, value) {
@@ -154,7 +161,7 @@
                     inputMid.val("");
                     inputText.val("");
 
-                    $(".removeBtn, modifyBtn").hide();
+                    $(".removeBtn, .modifyBtn").hide();
                     $(".reviewSaveBtn").show();
 
                     reviewModal.modal('show');
@@ -173,7 +180,7 @@
                         dataType: "text",
                         success: function(result) {
                             console.log("result : " + result);
-                            self.location.reload();
+                            self.location.reload(); // 현재 화면 다시 불러오기
                         }
                     })
                     reviewModal.modal('hide');
@@ -185,11 +192,11 @@
                         var date = new Date(str);
 
                         return date.getFullYear() + '/' +
-                        (date.getMonth() + 1) + '/' +
-                        date.getDate() + ' ' +
-                        date.getHours() + ':' +
-                        date.getMinutes();
-                    } // format()
+                        (date.getMonth() + 1 > 10? date.getMonth() + 1 : "0" + (date.getMonth() + 1))  + '/' +
+                        (date.getDate() > 10 ? date.getDate() : "0" + date.getDate()) + ' ' +
+                        (date.getHours() > 10 ? date.getHours() : "0" + date.getHours()) + ':' +
+                        (date.getMinutes() > 10 ? date.getMinutes() : "0" + getMinutes());
+                    } // formatTime()
 
                     $.getJSON("/reviews/" + mno + "/all", function(arr) {
                         var str = "";
@@ -207,8 +214,77 @@
 
                 } // getMovieReviews()
                 getMovieReviews();
-            }); // document.ready end
 
+                var reviewnum;
+
+                $(".reviewList").on("click", ".card-body", function() {
+                    $(".reviewSaveBtn").hide();
+                    $(".removeBtn, .modifyBtn").show();
+
+                    var targetReview = $(this);
+
+                    reviewnum = targetReview.data("reviewnum"); // data-reviewnum
+
+                    console.log("reviewnum" + reviewnum);
+
+                    inputMid.val(targetReview.data("mid")); // data-mid
+                    inputText.val(targetReview.find(".card-title").clone().children().remove().end().text());
+
+                    var grade = targetReview.find(".card-title span").html();
+                    $(".starrr a:nth-child("+grade+")").trigger('click');
+
+                    $(".reviewModal").modal("show");
+                }); // reviewList click event end
+
+                $(".modifyBtn").on("click", function() {
+                    var data = {reviewnum:reviewnum, mno:mno, grade:grade, text:inputText.val(), mid:inputMid.val() }; // 객체
+
+                    console.log(data);
+
+                    $.ajax({
+                        url: '/reviews/'+mno+"/"+reviewnum,
+                        type: 'PUT',
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'text',
+                        success: function(result) {
+                            console.log(result);
+                            self.location.reload();
+                        }
+                    }) // ajax end
+                    reviewModal.modal('hide');
+                }); // modifyBtn click event end
+
+                $(".removeBtn").on("click", function() {
+                    var data = {reviewnum:reviewnum};
+
+                    console.log(data);
+
+                    $.ajax({
+                        url: '/reviews/'+mno+"/"+reviewnum,
+                        type: 'DELETE',
+                        contentType: "application/json; charset=utf-8",
+                        success: function(result) {
+                            console.log(result);
+                            self.location.reload();
+                        }
+                    }) // ajax end
+                    reviewModal.modal('hide');
+
+                }); // removeBtn click event end
+
+                // 원본 사진 모달
+                $(".uploadResult li").click(function() {
+                    var file = $(this).data('file');
+
+                    console.log(file);
+
+                    $('.imageModal .modal-body').html("<img style='width:100%' src='/display?fileName="+file+"&size=1' >");
+
+                    $('.imageModal').modal("show");
+                }); //uploadResult li click event end
+
+            }); // document.ready end
         </script>
     </th:block>
 </th:block>

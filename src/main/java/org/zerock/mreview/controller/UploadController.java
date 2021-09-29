@@ -31,90 +31,106 @@ import java.util.UUID;
 @Log4j2
 public class UploadController {
 
-  @Value("${org.zerock.upload.path}")
-  private String uploadPath;
+    @Value("${org.zerock.upload.path}")
+    private String uploadPath;
 
-  @PostMapping("/uploadAjax")
-  public ResponseEntity<List<UploadResultDTO>> uploadFile(MultipartFile[] uploadFiles) {
-    List<UploadResultDTO> resultDTOList = new ArrayList<>();
+    @PostMapping("/uploadAjax")
+    public ResponseEntity<List<UploadResultDTO>> uploadFile(MultipartFile[] uploadFiles) {
+        List<UploadResultDTO> resultDTOList = new ArrayList<>();
 
-    for (MultipartFile uploadFile : uploadFiles) {
-      if (uploadFile.getContentType().startsWith("image") == false) {
-        log.warn("this file is not image type");
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-      }
-      String originalName = uploadFile.getOriginalFilename();
-      String fileName = originalName.substring(originalName.lastIndexOf("\\") + 1);
-      log.info(fileName);
+        for (MultipartFile uploadFile : uploadFiles) {
+            if (uploadFile.getContentType().startsWith("image") == false) {
+                log.warn("this file is not image type");
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
 
-      String folderPath = makeFolder();
+        String originalName = uploadFile.getOriginalFilename();
+        String fileName = originalName.substring(originalName.lastIndexOf("\\") + 1);
+        log.info(fileName);
 
-      String uuid = UUID.randomUUID().toString();
-      String saveName = uploadPath + File.separator + folderPath
-              + File.separator + uuid + "_" + fileName;
-      Path savePath = Paths.get(saveName);
-      try {
-        uploadFile.transferTo(savePath);
+        String folderPath = makeFolder();
 
-        //썸네일 생성
-        String thumbnailSaveName = uploadPath + File.separator + folderPath
+        String uuid = UUID.randomUUID().toString();
+        String saveName = uploadPath + File.separator + folderPath
+                + File.separator + uuid + "_" + fileName;
+        Path savePath = Paths.get(saveName);
+
+        try {
+            uploadFile.transferTo(savePath);
+
+            //썸네일 생성
+            String thumbnailSaveName = uploadPath + File.separator + folderPath
                 + File.separator + "s_" + uuid + "_" + fileName;
-        File thumbnailFile = new File(thumbnailSaveName);
-        Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile, 100,100);
+            File thumbnailFile = new File(thumbnailSaveName);
+            Thumbnailator.createThumbnail(savePath.toFile(), thumbnailFile, 100,100);
 
-        resultDTOList.add(new UploadResultDTO(fileName, uuid, folderPath));
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
+            resultDTOList.add(new UploadResultDTO(fileName, uuid, folderPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    } // for end
+
+        return new ResponseEntity<>(resultDTOList, HttpStatus.OK);
+    } // uploadFile()
+
+    @GetMapping("/display")
+    public ResponseEntity<byte[]> getFile(String fileName, String size) {
+
+        ResponseEntity<byte[]> result = null;
+
+        try {
+            String srcFileName = URLDecoder.decode(fileName, "UTF-8");
+            log.info("fileName : " + srcFileName);
+
+            File file = new File(uploadPath + File.separator + srcFileName);
+            log.info("LDY >>>>>>" + file.getName());
+            // 원본 파일과 썸네일 파일 구분
+          if(size != null && size.equals("1")) {
+            file = new File(file.getParent(), file.getName().substring(2)); // s_를 지우고 fileName만 넘김.
+          }
+
+          log.info("substring(2) - LDY >>>>>>" + file.getName() + file.getParent());
+          log.info("file : " + file);
+
+            HttpHeaders header = new HttpHeaders();
+            header.add("Content-Type", Files.probeContentType(file.toPath()));
+
+            result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file), header, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return new ResponseEntity<>(resultDTOList, HttpStatus.OK);
-  }
+        return result;
+    } // getFile()
 
-  @GetMapping("/display")
-  public ResponseEntity<byte[]> getFile(String fileName) {
-    ResponseEntity<byte[]> result = null;
-    try {
-      String srcFileName = URLDecoder.decode(fileName, "UTF-8");
-      log.info("fileName : " + srcFileName);
-      File file = new File(uploadPath + File.separator + srcFileName);
-      log.info("file : " + file);
-      HttpHeaders header = new HttpHeaders();
-      header.add("Content-Type", Files.probeContentType(file.toPath()));
-      result = new ResponseEntity<>(FileCopyUtils.copyToByteArray(file),
-              header, HttpStatus.OK);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-    return result;
-  }
+      @PostMapping("/removeFile")
+    public ResponseEntity<Boolean> removeFiles(String fileName) {
+        String srcFileName = null;
+        boolean result = false;
 
-  @PostMapping("/removeFile")
-  public ResponseEntity<Boolean> removeFiles(String fileName) {
-    String srcFileName = null;
-    boolean result = false;
-    try {
-      srcFileName = URLDecoder.decode(fileName, "UTF-8");
-      File file = new File(uploadPath + File.separator + srcFileName);
-      result = file.delete();
-      File thumbnail = new File(file.getParent(), "s_" + file.getName());
-      result = thumbnail.delete();
-      return new ResponseEntity<>(result, HttpStatus.OK);
-    } catch (Exception e) {
-      e.printStackTrace();
-      return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
+        try {
+            srcFileName = URLDecoder.decode(fileName, "UTF-8");
+            File file = new File(uploadPath + File.separator + srcFileName);
+            result = file.delete();
+            File thumbnail = new File(file.getParent(), "s_" + file.getName());
+            result = thumbnail.delete();
+            return new ResponseEntity<>(result, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    } // removeFiles()
 
-  private String makeFolder() {
-    String str = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-    String folderPath = str.replace("/", File.separator);
-    File uploadPathFolder = new File(uploadPath, folderPath);
-    if (uploadPathFolder.exists() == false) {
-      uploadPathFolder.mkdirs();
-    }
-    return folderPath;
-  }
+    private String makeFolder() {
+        String str = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+        String folderPath = str.replace("/", File.separator);
+        File uploadPathFolder = new File(uploadPath, folderPath);
 
+        if (uploadPathFolder.exists() == false) {
+            uploadPathFolder.mkdirs();
+        }
+
+        return folderPath;
+    } // makeFolder()
 
 }
